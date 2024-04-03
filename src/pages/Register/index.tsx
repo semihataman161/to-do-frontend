@@ -1,7 +1,10 @@
 import { Formik, Form, Field } from 'formik';
 import { TextField, Button, Typography, Grid } from '@mui/material';
 import * as Yup from 'yup';
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { register } from '@/service/User';
+import { RegisterRequest } from '@/types/api';
+import { toast } from 'react-toastify';
 
 interface FormValues {
     username: string;
@@ -10,17 +13,26 @@ interface FormValues {
 }
 
 export default function Register() {
+    const navigate = useNavigate();
+
     const RegisterSchema = Yup.object().shape({
         username: Yup.string().required('Username is required'),
         password: Yup.string().required('Password is required'),
-        passwordConfirmation: Yup.string().required('Password confirmation is required'),
+        passwordConfirmation: Yup.string()
+            .required('Password confirmation is required')
+            .oneOf([Yup.ref('password')], 'Passwords must match'),
     });
 
     const initialValues: FormValues = { username: '', password: '', passwordConfirmation: '' };
 
-    const handleSubmit = (values: FormValues) => {
-        console.log(values);
-        // Add your register logic here
+    const handleSubmit = async (values: FormValues) => {
+        const request: RegisterRequest = { username: values.username, password: values.password };
+        const response: any = await register(request);
+
+        if (response.status === 200) {
+            toast.success(response.data.message);
+            navigate("/login");
+        }
     };
 
     return (

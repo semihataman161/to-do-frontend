@@ -1,7 +1,9 @@
 import { Formik, Form, Field } from 'formik';
 import { TextField, Button, Typography, Grid } from '@mui/material';
 import * as Yup from 'yup';
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { login } from '@/service/User';
+import { toast } from 'react-toastify';
 
 interface FormValues {
     username: string;
@@ -9,6 +11,8 @@ interface FormValues {
 }
 
 export default function Login() {
+    const navigate = useNavigate();
+
     const LoginSchema = Yup.object().shape({
         username: Yup.string().required('Username is required'),
         password: Yup.string().required('Password is required'),
@@ -16,9 +20,13 @@ export default function Login() {
 
     const initialValues: FormValues = { username: '', password: '' };
 
-    const handleSubmit = (values: FormValues) => {
-        console.log(values);
-        // Add your login logic here
+    const handleSubmit = async (values: FormValues) => {
+        const response: any = await login(values);
+
+        if (response.status === 200) {
+            toast.success(response.data.message);
+            navigate("/main-page");
+        }
     };
 
     return (
